@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"os"
 )
 
 // Image scratch space.
@@ -11,6 +12,11 @@ type image struct {
 }
 
 // Clamped value at
+
+func (img image) Rows() []Xs {
+	return img.Chop(img.h)
+}
+
 func (img image) at(x, y int) X {
 	return img.Xs[clamp(x, img.w)+img.w*clamp(y, img.h)]
 }
@@ -23,10 +29,18 @@ func (img image) Set(x, y int, v X) {
 // Pretty Print
 func (img image) String() string {
 	s := ""
-	for i := 0; i < img.h; i++ {
-		s += fmt.Sprintf("%02v: %4.2v\n", i, img.Xs[i*img.w:(i+1)*img.w])
+	rows := img.Rows()
+	for i, row := range rows {
+		s += fmt.Sprintf("%02v: %v\n", i, row)
 	}
+
+	fmt.Println("Stringed")
 	return s
+}
+
+// Pretty Print
+func (xs Xs) String() string {
+	return fmt.Sprintf("%4.2v", xs)
 }
 
 // Returns a newly allocated image of height h, width w
@@ -49,38 +63,23 @@ func SmallTest() image {
 }
 
 func main() {
-	img := Load("sample.png")
+	img := Load(os.Args[1])
 
 	fmt.Println("Pre:")
 
 	// normalize
 	fmt.Println("Normalize:")
-	img.stretch()
+	//img.stretch()
 
 	// gauss!
 	fmt.Println("Blur:")
-	Convolve(&img, GaussianKernel(1))
+	//Convolve(&img, LaplaceGaussKernel(1))
+
+	LaplaceGaussKernel(1)
 
 	//
 	fmt.Println("Equalize:")
-	img.equalize()
+	//img.equalize()
 
-	//	// threshold
-	//	fmt.Println("Threshold:")
-	//	Threshold(img, 0.8)
-	//
-	//	// count
-	//	fmt.Println("Center:")
-	//	nx, ny := Count(img)
-	//
-	//	// blur nx, ny
-	//	OneDGauss(nx)
-	//	OneDGauss(ny)
-	//
-	//	// intersect
-	//	fmt.Println("Intersect:")
-	//	sect := Intersect(nx, ny)
-	//	Threshold(sect, 0.8)
-
-	// Export(img, "out.png")
+	Export(img, os.Args[2])
 }

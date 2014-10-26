@@ -14,6 +14,15 @@ func (s X) RGBA() (r, g, b, a uint32) {
 	return x, x, x, 0xFFFF
 }
 
+// n is how many chunks you want
+func (xs Xs) Chop(n int) []Xs {
+	xss := make([]Xs, len(xs)/n)
+	for i := range xss {
+		xss[i] = xs[i*n : (i+1)*n]
+	}
+	return xss
+}
+
 func (xs Xs) Split(N int, f func(Xs, int)) {
 	n := len(xs)
 	done := make(chan struct{})
@@ -130,7 +139,7 @@ func Convolve(img *image, k kernel) {
 
 			for h, v := range k.Xs {
 				kx, ky := xyc(h, k.n)
-				out[i] += v * img.at(x+kx, y+ky)
+				out[j] += v * img.at(x+kx, y+ky)
 			}
 		}
 	})
