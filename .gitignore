@@ -2,3 +2,5 @@
 !*/
 !*.go
 !.gitignore
+!README.md
+!LICENSE
