@@ -1,12 +1,31 @@
 package main
 
 import (
+	"fmt"
 	"math"
 	"runtime"
 )
 
 type X float64
 type Xs []X
+
+// Implements Stringer.
+// Pretty Print: hell, because though Xs lets me do cool things,
+// it also blocks any builting fmting
+func (xs Xs) String() (s string) {
+	for _, v := range xs {
+		s += fmt.Sprintf("|%5.2v ", v)
+	}
+	return s + "|"
+}
+
+func (xs Xs) StringChop(n int) (s string) {
+	rows := xs.Chop(n)
+	for i, row := range rows {
+		s += fmt.Sprintf("%02v: %v\n", i, row)
+	}
+	return s
+}
 
 // implements color.Color
 func (s X) RGBA() (r, g, b, a uint32) {
@@ -101,9 +120,13 @@ type kernel struct {
 	n int
 }
 
+func (k kernel) String() string {
+	return k.StringChop(k.n)
+}
+
 // GaussianKernel produces a 2-dimensional Gaussian kernel with sigma s
-func GaussianKernel(s float64) kernel {
-	n := int(math.Ceil(6 * s)) // sigma
+func GaussanKernel(n int) kernel {
+	s := float64(n) / 6 // sigma
 	k := kernel{make(Xs, n*n), n}
 	for i := range k.Xs {
 		x, y := i%n-n/2, i/n-n/2
@@ -114,17 +137,18 @@ func GaussianKernel(s float64) kernel {
 	return k
 }
 
-// LaplaceGaussKernel produces a 2-dimensional Gaussian kernel with sigma s
-func LaplaceGaussKernel(s float64) kernel {
-	n := int(math.Ceil(6 * s)) // sigma
+// LaplaceGaussKernel produces a 2-dimensional Gaussian kernel with sigma s; watchout, parameter is radius
+func LaplaceGaussKernel(r int) kernel {
+	n := r*2 + 1
+	s := float64(n) / 6 // sigma
 	k := kernel{make(Xs, n*n), n}
 
 	for i := range k.Xs {
 		x, y := i%n-n/2, i/n-n/2
-		k.Xs[i] *= -X(float64(2*s*s) - float64(x*x+y*y))
+		k.Xs[i] = -X(1 - float64(x*x+y*y)/float64(2*s*s))
 		k.Xs[i] *= X(math.Exp(-float64(x*x+y*y) / float64(2*s*s)))
+		k.Xs[i] /= X(math.Pi * math.Pow(s, 4))
 	}
-	k.stretch()
 
 	return k
 }

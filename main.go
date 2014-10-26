@@ -14,6 +14,7 @@ type image struct {
 // Clamped value at
 
 func (img image) Rows() []Xs {
+	fmt.Println("Rows")
 	return img.Chop(img.h)
 }
 
@@ -28,19 +29,7 @@ func (img image) Set(x, y int, v X) {
 
 // Pretty Print
 func (img image) String() string {
-	s := ""
-	rows := img.Rows()
-	for i, row := range rows {
-		s += fmt.Sprintf("%02v: %v\n", i, row)
-	}
-
-	fmt.Println("Stringed")
-	return s
-}
-
-// Pretty Print
-func (xs Xs) String() string {
-	return fmt.Sprintf("%4.2v", xs)
+	return img.StringChop(img.h)
 }
 
 // Returns a newly allocated image of height h, width w
@@ -73,13 +62,10 @@ func main() {
 
 	// gauss!
 	fmt.Println("Blur:")
-	//Convolve(&img, LaplaceGaussKernel(1))
-
-	LaplaceGaussKernel(1)
+	Convolve(&img, LaplaceGaussKernel(6))
 
 	//
 	fmt.Println("Equalize:")
-	//img.equalize()
 
 	Export(img, os.Args[2])
 }
